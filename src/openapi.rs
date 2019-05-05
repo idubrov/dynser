@@ -20,6 +20,7 @@ pub struct OpenApi {
     pub tags: Vec<Tag>,
     pub externalDocs: Option<ExternalDocumentation>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -38,6 +39,7 @@ pub struct Info {
     #[primitive]
     pub version: String,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -52,6 +54,7 @@ pub struct Contact {
     #[primitive]
     pub email: Option<String>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -64,6 +67,7 @@ pub struct License {
     #[primitive]
     pub url: Option<String>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -78,6 +82,7 @@ pub struct Server {
     #[serde(default)]
     pub variables: HashMap<String, ServerVariable>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -93,6 +98,7 @@ pub struct ServerVariable {
     #[primitive]
     pub description: Option<String>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -119,6 +125,7 @@ pub struct Components {
     #[serde(default)]
     pub callbacks: HashMap<String, Reference<Callback>>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -149,6 +156,7 @@ pub struct Path {
     #[serde(default)]
     pub parameters: Vec<Reference<Parameter>>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -180,6 +188,7 @@ pub struct Operation {
     #[serde(default)]
     pub servers: Vec<Server>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -192,6 +201,7 @@ pub struct ExternalDocumentation {
     #[primitive]
     pub url: String,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -232,6 +242,7 @@ pub struct Parameter {
     #[serde(default)]
     pub content: HashMap<String, MediaType>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -247,6 +258,7 @@ pub struct RequestBody {
     #[primitive]
     pub required: bool,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -262,6 +274,7 @@ pub struct MediaType {
     #[serde(default)]
     pub encoding: HashMap<String, Encoding>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -282,6 +295,7 @@ pub struct Encoding {
     #[primitive]
     pub allowReserved: bool,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -300,6 +314,7 @@ pub struct Response {
     #[serde(default)]
     pub links: HashMap<String, Reference<Link>>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -319,6 +334,7 @@ pub struct Example {
     #[primitive]
     pub externalValue: Option<String>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -338,6 +354,7 @@ pub struct Link {
     pub description: Option<String>,
     pub server: Option<Server>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -353,23 +370,10 @@ pub struct Tag {
     pub description: Option<String>,
     pub externalDocs: Option<ExternalDocumentation>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
-}
-
-#[derive(Default, Debug, PartialEq, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct ReferenceValue {
-    #[serde(rename = "$ref")]
-    reference: String,
-}
-
-#[derive(Debug, PartialEq, Deserialize)]
-#[serde(untagged)]
-pub enum Reference<T> {
-    Reference(ReferenceValue),
-    Other(T),
 }
 
 // FIXME: too big, so let's do JSON for now
@@ -397,6 +401,7 @@ pub struct SecurityScheme {
     #[primitive]
     pub openIdConnectUrl: Option<String>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -409,6 +414,7 @@ pub struct OAuthFlows {
     pub clientCredentials: Option<OAuthFlow>,
     pub authorizationCode: Option<OAuthFlow>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -425,6 +431,7 @@ pub struct OAuthFlow {
     pub refreshUrl: Option<String>,
     pub scopes: HashMap<String, String>,
 
+    #[cfg(not(feature = "no-flatten"))]
     #[serde(flatten)]
     #[default]
     pub extensions: HashMap<String, Value>,
@@ -432,11 +439,31 @@ pub struct OAuthFlow {
 
 pub type SecurityRequirement = HashMap<String, Vec<String>>;
 
-// Reflection API support
+/// Make it easier on serde -- don't use untagged enums
+#[cfg(feature = "no-flatten")]
+pub type Reference<T> = T;
 
-mod support {
-    use super::Reference;
+#[cfg(not(feature = "no-flatten"))]
+pub use self::reference::{Reference, ReferenceValue};
+
+#[cfg(not(feature = "no-flatten"))]
+mod reference {
     use crate::reflection::{FieldMutReflection, Object, ReflectionError};
+    use serde_derive::Deserialize;
+
+    #[derive(Default, Debug, PartialEq, Deserialize)]
+    #[serde(deny_unknown_fields)]
+    pub struct ReferenceValue {
+        #[serde(rename = "$ref")]
+        reference: String,
+    }
+
+    #[derive(Debug, PartialEq, Deserialize)]
+    #[serde(untagged)]
+    pub enum Reference<T> {
+        Reference(ReferenceValue),
+        Other(T),
+    }
 
     // FIXME: ugly -- we use empty reference as an indication of "no value"
     // This makes `$ref: ""` to have no effect, etc.

@@ -13,3 +13,6 @@ failure = "0.1.5"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
+
+[features]
+no-flatten = []

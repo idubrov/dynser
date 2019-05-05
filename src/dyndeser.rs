@@ -26,22 +26,26 @@ impl<'a, 'de> Visitor<'de> for ObjectVisitor<'a> {
         A: MapAccess<'de>,
     {
         while let Some(field_name) = map.next_key::<&str>()? {
-            let field = self
-                .object
-                .create(field_name)
-                .map_err(|_| A::Error::unknown_field(field_name, &[]))?;
+            let field = self.object.create(field_name);
             match field {
-                FieldMutReflection::Primitive(primitive) => {
+                Ok(FieldMutReflection::Primitive(primitive)) => {
                     map.next_value_seed(PrimitiveVisitor::new_seed(primitive))?;
                 }
-                FieldMutReflection::Object(object) => {
+                Ok(FieldMutReflection::Object(object)) => {
                     map.next_value_seed(ObjectVisitor::new_seed(object))?;
                 }
-                FieldMutReflection::List(list) => {
+                Ok(FieldMutReflection::List(list)) => {
                     map.next_value_seed(ListVisitor::new_seed(list))?;
                 }
-                FieldMutReflection::Any(value) => {
+                Ok(FieldMutReflection::Any(value)) => {
                     *value = map.next_value::<serde_json::Value>()?;
+                }
+                Err(_) => {
+                    // Ignoring unknown fields
+                    map.next_value::<serde::de::IgnoredAny>()?;
+
+                    // Alternatively, raise an error
+                    // return Err(A::Error::unknown_field(field_name, &[]))
                 }
             }
         }
