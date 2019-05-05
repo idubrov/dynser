@@ -1,0 +1,15 @@
+[package]
+name = "dynser"
+version = "0.1.0"
+authors = ["Ivan Dubrov <dubrov.ivan@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+dynser-derive = { path = "dynser-derive" }
+serde = "1.0.90"
+serde_derive = "1.0.90"
+serde_json = "1.0.39"
+failure = "0.1.5"
+
+[dev-dependencies]
+pretty_assertions = "0.6.1"
