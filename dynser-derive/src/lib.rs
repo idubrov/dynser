@@ -4,7 +4,7 @@ use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::parse::Error;
 use syn::spanned::Spanned;
-use syn::{Data, Field, PathSegment, Type};
+use syn::{Data, Field, Type};
 use synstructure::decl_derive;
 
 decl_derive!([Object, attributes(default, primitive, any)] => derive_object);
@@ -17,7 +17,6 @@ fn derive_object(s: synstructure::Structure) -> TokenStream {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
 fn derive_object_inner(s: &synstructure::Structure) -> Result<TokenStream, Error> {
     let ds = match s.ast().data {
         Data::Struct(ref ds) => ds,
@@ -120,15 +119,11 @@ fn field_name(field: &Field) -> String {
     ident.to_string().trim_start_matches("r#").to_owned()
 }
 
-fn only_segment(ty: &Type) -> Option<&PathSegment> {
-    match ty {
-        Type::Path(tp) if tp.path.segments.len() == 1 => {
-            Some(tp.path.segments.first().as_ref().unwrap().value())
-        }
-        _ => None,
-    }
-}
-
 fn is_wrapped_by(ty: &Type, type_name: &str) -> bool {
-    only_segment(ty).map_or(false, |segment| segment.ident == type_name)
+    match ty {
+        Type::Path(tp) if tp.path.leading_colon.is_none() && tp.path.segments.len() == 1 => {
+            tp.path.segments.first().as_ref().unwrap().value().ident == type_name
+        }
+        _ => false,
+    }
 }

@@ -73,7 +73,7 @@ where
 
 impl<T> Object for HashMap<String, Vec<T>>
 where
-    T: Object + Default,
+    Vec<T>: List,
 {
     fn create(&mut self, field_name: &str) -> Result<FieldMutReflection, ReflectionError> {
         let list = self.entry(field_name.to_owned()).or_insert_with(Vec::new);
@@ -101,13 +101,6 @@ impl Object for HashMap<String, serde_json::Value> {
             .entry(field_name.to_owned())
             .or_insert(serde_json::Value::Null);
         Ok(FieldMutReflection::Any(child))
-    }
-}
-
-impl Object for HashMap<String, Vec<serde_json::Value>> {
-    fn create(&mut self, field_name: &str) -> Result<FieldMutReflection, ReflectionError> {
-        let list = self.entry(field_name.to_owned()).or_insert_with(Vec::new);
-        Ok(FieldMutReflection::List(list))
     }
 }
 
@@ -147,13 +140,6 @@ macro_rules! primitive {
                     .entry(field_name.to_owned())
                     .or_insert_with(Default::default);
                 Ok(FieldMutReflection::Primitive(primitive))
-            }
-        }
-
-        impl Object for HashMap<String, Vec<$typ>> {
-            fn create(&mut self, field_name: &str) -> Result<FieldMutReflection, ReflectionError> {
-                let list = self.entry(field_name.to_owned()).or_insert_with(Vec::new);
-                Ok(FieldMutReflection::List(list))
             }
         }
 
